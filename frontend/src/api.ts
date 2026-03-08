@@ -1,4 +1,4 @@
-import { ValuationRequest, ValuationReport, MethodologyInfo } from "./types";
+import type { ValuationRequest, ValuationReport, MethodologyInfo } from "./types";
 
 const BASE_URL = "/api";
 

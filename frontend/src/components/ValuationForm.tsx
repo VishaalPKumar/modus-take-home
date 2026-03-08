@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Methodology, ValuationRequest } from "../types";
+import type { Methodology, ValuationRequest } from "../types";
 
 interface Props {
   sectors: string[];

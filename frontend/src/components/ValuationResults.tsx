@@ -1,4 +1,4 @@
-import { ValuationReport, ValuationResult } from "../types";
+import type { ValuationReport, ValuationResult } from "../types";
 
 const methodNames: Record<string, string> = {
   comps: "Comparable Company Analysis",

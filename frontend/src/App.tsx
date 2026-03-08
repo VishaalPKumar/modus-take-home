@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import ValuationForm from "./components/ValuationForm";
 import ValuationResults from "./components/ValuationResults";
 import { runValuation, getSectors } from "./api";
-import { ValuationRequest, ValuationReport } from "./types";
+import type { ValuationRequest, ValuationReport } from "./types";
 
 export default function App() {
   const [sectors, setSectors] = useState<string[]>([]);
