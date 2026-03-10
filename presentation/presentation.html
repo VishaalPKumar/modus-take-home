@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VC Audit Tool</title>
+
+  <!-- Reveal.js core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section id="title" class="section-divider" data-state="is-section-divider">
+        <h1 style="font-size: 56pt; margin-bottom: 16px;">VC Audit Tool</h1>
+        <p style="font-size: 22pt; color: var(--text-color); margin: 0;">Fair Value Estimation for Private Portfolio Companies</p>
+        <p style="font-size: 16pt; color: var(--muted-color); margin-top: 40px;">Vishaal Kumar &nbsp;&middot;&nbsp; March 2026</p>
+        <p style="font-size: 14pt; color: var(--muted-color); margin-top: 6px;">Modus Audit &mdash; Software Engineer</p>
+      </section>
+
+      <section id="slide-2">
+        <h2>Problem &amp; Approach</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p><strong>Problem</strong></p>
+              <p>Auditors need to estimate fair value of private, illiquid portfolio companies in VC portfolios</p>
+              <p style="margin-top: 16px;"><strong>Challenge</strong></p>
+              <p>No market price &mdash; need structured, defensible methodology with a complete audit trail</p>
+            </div>
+            <div>
+              <p><strong>My Approach</strong></p>
+              <ul>
+                <li>Full-stack service with <strong>3 valuation methodologies</strong></li>
+                <li>Every calculation step recorded for auditability</li>
+                <li>Sensitivity analysis &amp; multi-method triangulation</li>
+              </ul>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;">
+                <span class="tech-badge">Python / FastAPI</span>
+                <span class="tech-badge">React / TypeScript</span>
+                <span class="tech-badge">Pydantic</span>
+                <span class="tech-badge">Tailwind CSS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="slide-3">
+        <h2>Architecture Overview</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <div class="arch-box" style="margin-bottom: 0;">
+                <p style="margin: 0;"><i class="fa-solid fa-desktop" style="color: var(--primary-color);"></i> &nbsp;Frontend &mdash; React / TypeScript</p>
+              </div>
+              <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+              <div class="arch-box" style="margin-bottom: 0;">
+                <p style="margin: 0;"><i class="fa-solid fa-server" style="color: var(--primary-color);"></i> &nbsp;REST API &mdash; FastAPI</p>
+              </div>
+              <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+              <div class="arch-box" style="margin-bottom: 0;">
+                <p style="margin: 0;"><i class="fa-solid fa-gears" style="color: var(--primary-color);"></i> &nbsp;ValuationService</p>
+              </div>
+              <div class="arch-arrow"><i class="fa-solid fa-arrows-split-up-and-left fa-rotate-180"></i></div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div class="arch-box"><p style="margin: 0;">Comps</p></div>
+                <div class="arch-box"><p style="margin: 0;">DCF</p></div>
+                <div class="arch-box"><p style="margin: 0;">Last Round</p></div>
+              </div>
+              <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+              <div class="arch-box">
+                <p style="margin: 0;"><i class="fa-solid fa-database" style="color: var(--primary-color);"></i> &nbsp;DataProvider (ABC)</p>
+              </div>
+            </div>
+            <div>
+              <p><strong>Key Principles</strong></p>
+              <ul>
+                <li><strong>Strategy pattern</strong> for pluggable valuation engines</li>
+                <li><strong>Dependency injection</strong> &mdash; DataProvider abstraction decouples data from logic</li>
+                <li><strong>Single responsibility</strong> &mdash; each layer has one job</li>
+                <li><strong>Pydantic models</strong> as single source of truth for validation, serialization, and OpenAPI docs</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="divider-1" class="section-divider" data-state="is-section-divider">
+        <h1>Valuation Engines</h1>
+        <p><i class="fa-solid fa-arrow-down" style="font-size: 14pt;"></i></p>
+      </section>
+
+      <section>
+        <section id="slide-5-1">
+          <h2>Comparable Company Analysis</h2>
+          <div class="content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+              <div>
+                <p><strong>How it works</strong></p>
+                <ul>
+                  <li>Find public comps by sector</li>
+                  <li>Calculate EV/Revenue multiples for each</li>
+                  <li>Apply <strong>median multiple</strong> to target company revenue</li>
+                </ul>
+                <p style="margin-top: 14px;"><strong>Implementation</strong></p>
+                <ul>
+                  <li><span class="mono">statistics.median()</span> for central estimate</li>
+                  <li><span class="mono">quantiles()</span> for Q1/Q3 range</li>
+                  <li>Minimum 2 comparables required (raises <span class="mono">ValueError</span>)</li>
+                </ul>
+              </div>
+              <div>
+                <div class="info-card">
+                  <h3><i class="fa-solid fa-database" style="color: var(--primary-color);"></i> &nbsp;Mock Data</h3>
+                  <p>15 real public companies across 4 sectors</p>
+                  <p class="text-muted" style="font-size: 13pt;">Datadog, Snowflake, CrowdStrike, Palantir, UiPath&hellip;</p>
+                </div>
+                <div class="info-card" style="margin-top: 14px;">
+                  <h3><i class="fa-solid fa-chart-bar" style="color: var(--primary-color);"></i> &nbsp;Output</h3>
+                  <p>Point estimate + interquartile range</p>
+                  <p>Step-by-step derivation with citations</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="slide-5-2">
+          <h2>Discounted Cash Flow (DCF)</h2>
+          <div class="content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+              <div>
+                <p><strong>How it works</strong></p>
+                <ul>
+                  <li>Project 5-year free cash flows</li>
+                  <li>Discount at WACC to present value</li>
+                  <li>Add terminal value via <strong>Gordon Growth Model</strong></li>
+                </ul>
+                <p style="margin-top: 14px;"><strong>Key Formulas</strong></p>
+                <ul>
+                  <li>Year N FCF = Revenue &times; (1+g)<sup>N</sup> &times; margin</li>
+                  <li>Terminal = FCF<sub>final</sub> &times; (1+g<sub>t</sub>) / (WACC &minus; g<sub>t</sub>)</li>
+                </ul>
+              </div>
+              <div>
+                <div class="info-card">
+                  <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary-color);"></i> &nbsp;Validation</h3>
+                  <p>Cross-field: <span class="mono">discount_rate</span> must exceed <span class="mono">terminal_growth_rate</span></p>
+                  <p>Range: &plusmn;20% sensitivity bounds</p>
+                </div>
+                <div class="info-card" style="margin-top: 14px;">
+                  <h3><i class="fa-solid fa-magnifying-glass" style="color: var(--primary-color);"></i> &nbsp;Why DCF Matters for Audit</h3>
+                  <p>Most assumption-heavy methodology &mdash; most important to make every input <strong>transparent and traceable</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="slide-5-3">
+          <h2>Last Round (Market-Adjusted)</h2>
+          <div class="content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+              <div>
+                <p><strong>How it works</strong></p>
+                <ul>
+                  <li>Start from last funding round valuation</li>
+                  <li>Adjust by <strong>public index performance</strong> since that date</li>
+                  <li>Simplest method &mdash; provides useful anchor point</li>
+                </ul>
+                <p style="margin-top: 14px;"><strong>Implementation</strong></p>
+                <ul>
+                  <li>Uses Nasdaq index data (mock: Jan 2023 &ndash; Mar 2026)</li>
+                  <li>Index return = (current &minus; round_date) / round_date</li>
+                  <li>Range: &plusmn;15% for illiquidity / company-specific risk</li>
+                </ul>
+              </div>
+              <div>
+                <div class="info-card">
+                  <h3><i class="fa-solid fa-calendar-check" style="color: var(--primary-color);"></i> &nbsp;Date Validation</h3>
+                  <p>Requires index data within <strong>180 days</strong> of round date</p>
+                  <p>Raises error if no suitable data point found</p>
+                </div>
+                <div class="info-card" style="margin-top: 14px;">
+                  <h3><i class="fa-solid fa-anchor" style="color: var(--primary-color);"></i> &nbsp;Role in Triangulation</h3>
+                  <p>Provides market-based anchor to cross-check model-driven estimates from Comps and DCF</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="divider-2" class="section-divider" data-state="is-section-divider">
+        <h1>Auditability</h1>
+      </section>
+
+      <section id="slide-7">
+        <h2>Audit Trail &amp; Traceability</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p class="text-muted" style="font-size: 14pt; margin-bottom: 12px;">Core of the assignment &mdash; auditors need defensible, traceable valuations</p>
+              <p><strong>ValuationResult Structure</strong></p>
+              <div class="step-item">
+                <div class="step-num">1</div>
+                <p style="margin: 0;"><span class="mono">steps[]</span> &mdash; numbered derivation steps with description + detail</p>
+              </div>
+              <div class="step-item">
+                <div class="step-num">2</div>
+                <p style="margin: 0;"><span class="mono">assumptions{}</span> &mdash; every input and intermediate value recorded</p>
+              </div>
+              <div class="step-item">
+                <div class="step-num">3</div>
+                <p style="margin: 0;"><span class="mono">citations[]</span> &mdash; data sources for every piece of external data</p>
+              </div>
+            </div>
+            <div>
+              <div class="info-card">
+                <h3><i class="fa-solid fa-file-pdf" style="color: var(--primary-color);"></i> &nbsp;PDF Export</h3>
+                <p>Summary table + per-method breakdowns</p>
+                <p>Full audit narrative with all assumptions</p>
+                <p>Generated via <span class="mono">ReportLab</span></p>
+              </div>
+              <div class="info-card" style="margin-top: 14px;">
+                <h3><i class="fa-solid fa-eye" style="color: var(--primary-color);"></i> &nbsp;Design Principle</h3>
+                <p>Every calculation step is recorded &mdash; not just the final number. An auditor can trace any estimate back to its inputs.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="slide-8">
+        <h2>Sensitivity &amp; Triangulation</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p><strong>Sensitivity Analysis</strong></p>
+              <ul>
+                <li><strong>DCF:</strong> 2D grid (discount rate &times; growth rate) with color-coded heatmap</li>
+                <li><strong>Comps / Last Round:</strong> 1D parameter sweep</li>
+                <li>Shows how the estimate changes with different assumptions</li>
+              </ul>
+              <div class="info-card" style="margin-top: 14px;">
+                <h3><i class="fa-solid fa-table-cells" style="color: var(--primary-color);"></i> &nbsp;Why It Matters</h3>
+                <p>Auditors want to know: &ldquo;How sensitive is this number to my assumptions?&rdquo;</p>
+              </div>
+            </div>
+            <div>
+              <p><strong>Triangulation (Multi-Method)</strong></p>
+              <ul>
+                <li>Run all 3 methods simultaneously</li>
+                <li>Comparison table: method, estimate, range</li>
+                <li>Visual range bars with <strong>convergence zone</strong> overlay</li>
+              </ul>
+              <div class="info-card" style="margin-top: 14px;">
+                <h3><i class="fa-solid fa-arrows-to-dot" style="color: var(--primary-color);"></i> &nbsp;Convergence</h3>
+                <p>If ranges from multiple methods overlap &rarr; higher confidence in the estimate</p>
+                <p>Divergence flags areas needing closer review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="divider-3" class="section-divider" data-state="is-section-divider">
+        <h1>Quality &amp; UX</h1>
+      </section>
+
+      <section id="slide-10">
+        <h2>Testing Strategy</h2>
+        <div class="content">
+          <p class="text-muted" style="font-size: 14pt; margin-bottom: 8px;"><strong style="color: var(--text-color);">~50+ tests</strong> across all layers</p>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div class="info-card">
+              <h3><i class="fa-solid fa-cube" style="color: var(--primary-color);"></i> &nbsp;Models</h3>
+              <ul>
+                <li>Pydantic validation</li>
+                <li>Cross-field constraints</li>
+                <li>Serialization round-trips</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-gears" style="color: var(--primary-color);"></i> &nbsp;Engines</h3>
+              <ul>
+                <li>Correct calculations</li>
+                <li>Edge cases (&lt; 2 comps)</li>
+                <li>Monotonicity properties</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-layer-group" style="color: var(--primary-color);"></i> &nbsp;Service</h3>
+              <ul>
+                <li>Multi-method orchestration</li>
+                <li>Report assembly</li>
+                <li>Error propagation</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-plug" style="color: var(--primary-color);"></i> &nbsp;API</h3>
+              <ul>
+                <li>Full request/response cycles</li>
+                <li>Error codes &amp; validation</li>
+                <li>PDF export (magic bytes)</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-sliders" style="color: var(--primary-color);"></i> &nbsp;Sensitivity</h3>
+              <ul>
+                <li>Grid generation</li>
+                <li>Parameter monotonicity</li>
+                <li>Boundary conditions</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-flask" style="color: var(--primary-color);"></i> &nbsp;Pattern</h3>
+              <ul>
+                <li>Custom test providers</li>
+                <li>e.g. <span class="mono" style="font-size: 11pt;">_FewCompsProvider</span></li>
+                <li>Isolated edge case testing</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="slide-11">
+        <h2>Frontend Walkthrough</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p><strong>Two-Panel Layout</strong></p>
+              <ul>
+                <li>Sticky input form (left) + scrollable results (right)</li>
+                <li>Smart form: conditional fields based on selected methodologies</li>
+                <li>Client-side validation mirrors backend constraints</li>
+              </ul>
+              <p style="margin-top: 14px;"><strong>Rich Result Display</strong></p>
+              <ul>
+                <li>Per-method cards: estimate, range, assumptions, audit trail</li>
+                <li>Sensitivity toggle per method</li>
+                <li>Triangulation view when multiple methods selected</li>
+              </ul>
+            </div>
+            <div>
+              <div class="info-card">
+                <h3><i class="fa-solid fa-check-double" style="color: var(--primary-color);"></i> &nbsp;Validation Examples</h3>
+                <p>Positive revenue required</p>
+                <p>Discount rate &gt; terminal growth rate</p>
+                <p>At least one methodology selected</p>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px;">
+                <span class="tech-badge">React 18</span>
+                <span class="tech-badge">TypeScript</span>
+                <span class="tech-badge">Tailwind CSS</span>
+                <span class="tech-badge">Vite</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="slide-12">
+        <h2>Key Design Decisions</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="info-card">
+              <h3><i class="fa-solid fa-puzzle-piece" style="color: var(--primary-color);"></i> &nbsp;Strategy Pattern</h3>
+              <p>Pluggable valuation engines &mdash; easy to add new methodologies without touching existing code</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary-color);"></i> &nbsp;Pydantic as Source of Truth</h3>
+              <p>One model definition drives validation, serialization, and OpenAPI documentation</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-plug-circle-check" style="color: var(--primary-color);"></i> &nbsp;DataProvider ABC</h3>
+              <p>Mock data today, real APIs tomorrow &mdash; swap without touching business logic</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-clipboard-check" style="color: var(--primary-color);"></i> &nbsp;Audit-First Design</h3>
+              <p>Every calculation step recorded, not just final numbers &mdash; built for traceability from the start</p>
+            </div>
+            <div class="info-card" style="grid-column: span 2;">
+              <h3><i class="fa-solid fa-arrows-to-dot" style="color: var(--primary-color);"></i> &nbsp;Multi-Method Triangulation</h3>
+              <p>Convergence analysis across methods increases confidence &mdash; divergence flags areas for closer review</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="slide-13" class="section-divider" data-state="is-section-divider">
+        <h1 style="font-size: 48pt;">Thank You</h1>
+        <p style="font-size: 18pt; color: var(--text-color); margin-top: 20px;">Questions about design, implementation, or methodology?</p>
+        <p style="font-size: 14pt; color: var(--muted-color); margin-top: 30px;">Vishaal Kumar &nbsp;&middot;&nbsp; vishaal@hey.com</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chart/plugin.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0,
+      controls: true,
+      progress: true,
+      slideNumber: false,
+      hash: true,
+      transition: 'slide',
+      center: false,
+      plugins: [ RevealChart ],
+      chart: {
+        defaults: Object.assign({
+          color: 'rgba(0, 0, 0, 0.8)',
+          borderColor: 'rgba(0, 0, 0, 0.8)',
+          devicePixelRatio: 2
+        }, window.location.search.includes('export') ? { animation: false } : {})
+      }
+    });
+  </script>
+</body>
+</html>
