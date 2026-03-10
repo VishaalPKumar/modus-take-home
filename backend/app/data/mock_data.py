@@ -1,6 +1,8 @@
 from datetime import date
 
-COMPARABLE_COMPANIES = [
+from app.models import ComparableCompany
+
+COMPARABLE_COMPANIES: list[ComparableCompany] = [
     # Technology
     {"name": "Datadog", "sector": "technology", "revenue": 2_130_000_000, "ebitda": 450_000_000, "enterprise_value": 38_000_000_000},
     {"name": "Snowflake", "sector": "technology", "revenue": 2_810_000_000, "ebitda": -120_000_000, "enterprise_value": 55_000_000_000},
@@ -21,6 +23,7 @@ COMPARABLE_COMPANIES = [
     {"name": "Atlassian", "sector": "enterprise_saas", "revenue": 4_400_000_000, "ebitda": 600_000_000, "enterprise_value": 50_000_000_000},
     {"name": "HubSpot", "sector": "enterprise_saas", "revenue": 2_630_000_000, "ebitda": 350_000_000, "enterprise_value": 28_000_000_000},
     {"name": "Freshworks", "sector": "enterprise_saas", "revenue": 720_000_000, "ebitda": 40_000_000, "enterprise_value": 5_200_000_000},
+    {"name": "ServiceNow", "sector": "enterprise_saas", "revenue": 9_600_000_000, "ebitda": 2_100_000_000, "enterprise_value": 175_000_000_000},
 ]
 
 # Monthly Nasdaq Composite values (approximate, for mock purposes)

@@ -1,7 +1,7 @@
-import pytest
 from datetime import date
-from app.service import ValuationService
-from app.data.provider import MockDataProvider
+
+import pytest
+
 from app.models import (
     CompsInput,
     DCFInput,
@@ -9,11 +9,6 @@ from app.models import (
     Methodology,
     ValuationRequest,
 )
-
-
-@pytest.fixture
-def service():
-    return ValuationService(MockDataProvider())
 
 
 def test_single_method_comps(service):

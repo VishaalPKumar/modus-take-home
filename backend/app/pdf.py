@@ -4,13 +4,8 @@ from datetime import datetime, timezone
 
 from fpdf import FPDF
 
+from app.constants import METHOD_NAMES
 from app.models import ValuationReport, ValuationResult
-
-METHOD_NAMES = {
-    "comps": "Comparable Company Analysis",
-    "dcf": "Discounted Cash Flow",
-    "last_round": "Last Round (Market-Adjusted)",
-}
 
 
 def fmt_currency(value: float) -> str:
@@ -37,6 +32,8 @@ def _pretty_value(value: object) -> str:
             return fmt_percent(value)
         if abs(value) > 1000:
             return fmt_currency(value)
+        if value == int(value):
+            return str(int(value))
         return f"{value:.2f}"
     return str(value)
 

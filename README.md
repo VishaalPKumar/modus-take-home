@@ -14,16 +14,29 @@ Each methodology produces a structured audit trail: step-by-step derivation, ass
 
 ## Design Decisions
 
-- **Mock data with abstraction layer** — `DataProvider` ABC makes it trivial to swap in live APIs
+- **Mock data with abstraction layer** — `DataProvider` ABC makes it trivial to swap in live APIs (Bloomberg, PitchBook) without changing engine or service code
 - **Pydantic models** — single source of truth for validation, serialization, and API docs
+- **Strategy pattern (`**kwargs`)** — each engine declares only its own parameters; callers dispatch uniformly without a union input type. Tradeoff: runtime argument checking, mitigated by small engine count and high test coverage
+- **Sensitivity analysis** — each method varies its most impactful inputs over a grid (e.g. discount rate + growth rate for DCF)
+- **Triangulation** — multiple methods produce convergence/divergence visualization with range bars and overlap zone
+- **PDF export** — `fpdf2` generates a self-contained report with audit trail, assumptions, and citations
+
+## Tradeoffs
+
+| Decision | Why | Limitation |
+|----------|-----|------------|
+| Mock data only | `DataProvider` ABC is the seam for live APIs | No real market data |
+| `**kwargs` dispatch | Simpler strategy pattern | Runtime, not compile-time, arg checking |
+| In-memory storage | `OrderedDict` with bounded eviction | Needs Redis/Postgres for production |
+| Sync math, async handlers | Valuations are fast (<50ms) | No background task support |
+
+## Future Improvements
+
+- Live market data (Bloomberg, PitchBook, Capital IQ) · Database persistence with auth · EV/EBITDA multiples · Custom peer lists · Monte Carlo simulation · Portfolio-level batch reporting
+
 ## Adding a Methodology
 
-1. Add a variant to `Methodology` enum in `models.py`
-2. Add an input model and wire it as an optional field on `ValuationRequest`
-3. Create `engines/new_engine.py` implementing the `ValuationEngine` ABC
-4. Register it in `ValuationService._engines` and add the dispatch branch in `_run_method()`
-5. Add a `_sensitivity_new()` method in `ValuationService` and wire it in `sensitivity()`
-6. Add tests — see `test_comps.py` and `test_sensitivity.py` for patterns
+1. Add variant to `Methodology` enum → 2. Add input model on `ValuationRequest` → 3. Implement `ValuationEngine` ABC → 4. Register in `ValuationService._engines` → 5. Add `_sensitivity_*()` method → 6. Add tests
 
 ## Setup
 

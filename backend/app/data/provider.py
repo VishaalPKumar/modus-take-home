@@ -2,11 +2,12 @@ from abc import ABC, abstractmethod
 from datetime import date
 
 from app.data.mock_data import COMPARABLE_COMPANIES, NASDAQ_INDEX
+from app.models import ComparableCompany
 
 
 class DataProvider(ABC):
     @abstractmethod
-    def get_comparable_companies(self, sector: str) -> list[dict]:
+    def get_comparable_companies(self, sector: str) -> list[ComparableCompany]:
         ...
 
     @abstractmethod
@@ -19,7 +20,7 @@ class DataProvider(ABC):
 
 
 class MockDataProvider(DataProvider):
-    def get_comparable_companies(self, sector: str) -> list[dict]:
+    def get_comparable_companies(self, sector: str) -> list[ComparableCompany]:
         return [c for c in COMPARABLE_COMPANIES if c["sector"] == sector.lower()]
 
     def get_index_value(self, index_name: str, as_of_date: date) -> float | None:

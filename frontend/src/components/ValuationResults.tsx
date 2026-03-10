@@ -1,21 +1,9 @@
 import { useState } from "react";
 import type { ValuationReport, ValuationRequest, ValuationResult, SensitivityResponse } from "../types";
 import { runSensitivity, exportPdf } from "../api";
+import { formatCurrency, methodNames } from "../utils";
 import TriangulationView from "./TriangulationView";
 import SensitivityTable from "./SensitivityTable";
-
-const methodNames: Record<string, string> = {
-  comps: "Comparable Company Analysis",
-  dcf: "Discounted Cash Flow",
-  last_round: "Last Round (Market-Adjusted)",
-};
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value.toFixed(0)}`;
-}
 
 function ResultCard({
   result,

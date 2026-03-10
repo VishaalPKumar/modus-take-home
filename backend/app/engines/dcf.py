@@ -11,6 +11,8 @@ class DCFEngine(ValuationEngine):
         discount_rate = dcf_input.discount_rate
         terminal_growth_rate = dcf_input.terminal_growth_rate
 
+        # Validate here even though DCFInput has a model_validator, because
+        # model_copy() bypasses Pydantic validators on the copied instance.
         if discount_rate <= terminal_growth_rate:
             raise ValueError(
                 f"Discount rate ({discount_rate}) must exceed terminal growth rate ({terminal_growth_rate}) "

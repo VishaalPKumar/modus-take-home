@@ -1,9 +1,17 @@
 from datetime import date, datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import Any, TypedDict
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, model_validator
+
+
+class ComparableCompany(TypedDict):
+    name: str
+    sector: str
+    revenue: float
+    ebitda: float
+    enterprise_value: float
 
 
 class Methodology(str, Enum):
@@ -14,6 +22,7 @@ class Methodology(str, Enum):
 
 class CompsInput(BaseModel):
     revenue: float = Field(gt=0, description="Annual revenue in USD")
+    # Reserved for future EV/EBITDA support
     ebitda: float | None = Field(default=None, gt=0, description="Annual EBITDA in USD")
 
 

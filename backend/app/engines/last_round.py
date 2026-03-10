@@ -9,9 +9,9 @@ class LastRoundEngine(ValuationEngine):
     def __init__(self, data_provider: DataProvider):
         self.data_provider = data_provider
 
-    def value(self, last_round_input: LastRoundInput) -> ValuationResult:
+    def value(self, last_round_input: LastRoundInput, as_of_date: date | None = None) -> ValuationResult:
         steps: list[ValuationStep] = []
-        today = date.today()
+        today = as_of_date or date.today()
 
         # Step 1: Get index values
         round_index = self.data_provider.get_index_value("nasdaq", last_round_input.round_date)

@@ -1,13 +1,3 @@
-import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 def test_health(client):
     resp = client.get("/api/health")
     assert resp.status_code == 200
@@ -102,3 +92,23 @@ def test_export_pdf_returns_pdf(client):
 def test_export_pdf_not_found(client):
     resp = client.get("/api/valuations/nonexistent-id/export")
     assert resp.status_code == 404
+
+
+def test_export_pdf_special_characters_in_name(client):
+    """Company names with special characters should produce safe filenames."""
+    create_resp = client.post("/api/valuations", json={
+        "company_name": "Acme & Co. (Test)/Ltd",
+        "sector": "technology",
+        "methodologies": ["comps"],
+        "comps_input": {"revenue": 10000000},
+    })
+    assert create_resp.status_code == 200
+    report_id = create_resp.json()["id"]
+
+    resp = client.get(f"/api/valuations/{report_id}/export")
+    assert resp.status_code == 200
+    disposition = resp.headers["content-disposition"]
+    # Filename should not contain special characters like &, (, ), /
+    assert "&" not in disposition
+    assert "(" not in disposition
+    assert "/" not in disposition

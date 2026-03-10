@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Methodology, ValuationRequest } from "../types";
+import { methodEntries } from "../utils";
 
 interface Props {
   sectors: string[];
@@ -124,18 +125,12 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
       <div>
         <label className={labelClass}>Valuation Methodologies</label>
         <div className="space-y-2">
-          {(
-            [
-              ["comps", "Comparable Company Analysis"],
-              ["dcf", "Discounted Cash Flow"],
-              ["last_round", "Last Round (Market-Adjusted)"],
-            ] as [Methodology, string][]
-          ).map(([id, name]) => (
+          {methodEntries.map(([id, name]) => (
             <label key={id} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={methods.has(id)}
-                onChange={() => toggleMethod(id)}
+                checked={methods.has(id as Methodology)}
+                onChange={() => toggleMethod(id as Methodology)}
                 className="rounded border-gray-300"
               />
               {name}
@@ -247,6 +242,7 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
               type="date"
               value={roundDate}
               onChange={(e) => setRoundDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
               required
             />
           </div>

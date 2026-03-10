@@ -14,9 +14,9 @@ class CompsEngine(ValuationEngine):
 
         # Step 1: Fetch comparable companies
         comps = self.data_provider.get_comparable_companies(sector)
-        if len(comps) < 2:
+        if len(comps) < 3:
             raise ValueError(
-                f"Need at least 2 comparable companies for sector '{sector}', found {len(comps)}"
+                f"Need at least 3 comparable companies for sector '{sector}', found {len(comps)}"
             )
 
         steps.append(ValuationStep(

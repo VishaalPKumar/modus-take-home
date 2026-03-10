@@ -1,6 +1,5 @@
 import pytest
 
-from app.data.provider import MockDataProvider
 from app.models import (
     CompsInput,
     DCFInput,
@@ -8,12 +7,6 @@ from app.models import (
     Methodology,
     SensitivityRequest,
 )
-from app.service import ValuationService
-
-
-@pytest.fixture
-def service():
-    return ValuationService(MockDataProvider())
 
 
 def test_dcf_sensitivity_returns_grid(service):

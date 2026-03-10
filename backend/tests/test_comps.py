@@ -21,7 +21,7 @@ def test_comps_engine_technology():
 
 def test_comps_engine_no_comps_found():
     engine = CompsEngine(MockDataProvider())
-    with pytest.raises(ValueError, match="at least 2 comparable"):
+    with pytest.raises(ValueError, match="at least 3 comparable"):
         engine.value(
             sector="underwater_basket_weaving",
             comps_input=CompsInput(revenue=10_000_000),
@@ -55,5 +55,11 @@ def test_comps_few_comparables_valid_range():
 
 def test_comps_single_comparable_raises():
     engine = CompsEngine(_FewCompsProvider(1))
-    with pytest.raises(ValueError, match="at least 2 comparable"):
+    with pytest.raises(ValueError, match="at least 3 comparable"):
+        engine.value(sector="technology", comps_input=CompsInput(revenue=10_000_000))
+
+
+def test_comps_two_comparables_raises():
+    engine = CompsEngine(_FewCompsProvider(2))
+    with pytest.raises(ValueError, match="at least 3 comparable"):
         engine.value(sector="technology", comps_input=CompsInput(revenue=10_000_000))

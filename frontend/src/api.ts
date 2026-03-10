@@ -19,6 +19,10 @@ export async function runValuation(
 
 export async function getMethodologies(): Promise<MethodologyInfo[]> {
   const resp = await fetch(`${BASE_URL}/methodologies`);
+  if (!resp.ok) {
+    const error = await resp.json().catch(() => ({ detail: resp.statusText }));
+    throw new Error(error.detail || "Failed to fetch methodologies");
+  }
   return resp.json();
 }
 
@@ -39,6 +43,10 @@ export async function runSensitivity(
 
 export async function getSectors(): Promise<string[]> {
   const resp = await fetch(`${BASE_URL}/sectors`);
+  if (!resp.ok) {
+    const error = await resp.json().catch(() => ({ detail: resp.statusText }));
+    throw new Error(error.detail || "Failed to fetch sectors");
+  }
   return resp.json();
 }
 

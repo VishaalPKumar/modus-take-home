@@ -73,7 +73,7 @@ class ValuationService:
                         parameters={"discount_rate": dr, "growth_rate": gr},
                         estimated_value=result.estimated_value,
                     ))
-                except (ValueError, Exception):
+                except ValueError:
                     continue
         return SensitivityResponse(
             methodology=Methodology.DCF,
