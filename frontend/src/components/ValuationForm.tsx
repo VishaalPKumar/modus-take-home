@@ -33,8 +33,32 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
     setMethods(next);
   };
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    if (methods.has("comps") && (isNaN(parseFloat(revenue)) || parseFloat(revenue) <= 0)) {
+      setValidationError("Comps: Revenue must be a positive number.");
+      return;
+    }
+    if (methods.has("dcf")) {
+      const dcfRev = parseFloat(dcfRevenue || revenue);
+      if (isNaN(dcfRev) || dcfRev <= 0) {
+        setValidationError("DCF: Revenue must be a positive number.");
+        return;
+      }
+      if (parseFloat(discountRate) <= parseFloat(terminalGrowthRate)) {
+        setValidationError("DCF: Discount rate must exceed terminal growth rate.");
+        return;
+      }
+    }
+    if (methods.has("last_round") && (isNaN(parseFloat(postMoneyValuation)) || parseFloat(postMoneyValuation) <= 0)) {
+      setValidationError("Last Round: Post-money valuation must be a positive number.");
+      return;
+    }
+
     const request: ValuationRequest = {
       company_name: companyName,
       sector,
@@ -227,6 +251,10 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
             />
           </div>
         </fieldset>
+      )}
+
+      {validationError && (
+        <p className="text-sm text-red-600">{validationError}</p>
       )}
 
       <button

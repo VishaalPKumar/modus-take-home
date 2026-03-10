@@ -102,3 +102,39 @@ def test_valuation_report():
     assert report.company_name == "Basis AI"
     assert len(report.results) == 1
     assert report.id is not None
+
+
+def test_valuation_report_created_at_utc():
+    report = ValuationReport(
+        company_name="Test",
+        sector="technology",
+        results=[],
+    )
+    assert report.created_at.tzinfo is not None
+
+
+def test_valuation_request_missing_comps_input_raises():
+    with pytest.raises(ValueError, match="comps_input is required"):
+        ValuationRequest(
+            company_name="TestCo",
+            sector="technology",
+            methodologies=[Methodology.COMPS],
+        )
+
+
+def test_valuation_request_missing_dcf_input_raises():
+    with pytest.raises(ValueError, match="dcf_input is required"):
+        ValuationRequest(
+            company_name="TestCo",
+            sector="technology",
+            methodologies=[Methodology.DCF],
+        )
+
+
+def test_valuation_request_missing_last_round_input_raises():
+    with pytest.raises(ValueError, match="last_round_input is required"):
+        ValuationRequest(
+            company_name="TestCo",
+            sector="technology",
+            methodologies=[Methodology.LAST_ROUND],
+        )

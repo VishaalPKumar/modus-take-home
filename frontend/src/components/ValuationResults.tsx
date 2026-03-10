@@ -1,4 +1,8 @@
-import type { ValuationReport, ValuationResult } from "../types";
+import { useState } from "react";
+import type { ValuationReport, ValuationRequest, ValuationResult, SensitivityResponse } from "../types";
+import { runSensitivity, exportPdf } from "../api";
+import TriangulationView from "./TriangulationView";
+import SensitivityTable from "./SensitivityTable";
 
 const methodNames: Record<string, string> = {
   comps: "Comparable Company Analysis",
@@ -13,7 +17,40 @@ function formatCurrency(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
-function ResultCard({ result }: { result: ValuationResult }) {
+function ResultCard({
+  result,
+  request,
+}: {
+  result: ValuationResult;
+  request: ValuationRequest;
+}) {
+  const [sensitivity, setSensitivity] = useState<SensitivityResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSensitivity = async () => {
+    if (sensitivity) {
+      setSensitivity(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await runSensitivity({
+        methodology: result.methodology,
+        sector: request.sector,
+        comps_input: result.methodology === "comps" ? request.comps_input : undefined,
+        dcf_input: result.methodology === "dcf" ? request.dcf_input : undefined,
+        last_round_input: result.methodology === "last_round" ? request.last_round_input : undefined,
+      });
+      setSensitivity(resp);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sensitivity analysis failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -92,22 +129,59 @@ function ResultCard({ result }: { result: ValuationResult }) {
           ))}
         </ul>
       </div>
+
+      {/* Sensitivity button + table */}
+      <div className="border-t border-gray-100 pt-3">
+        <button
+          onClick={handleSensitivity}
+          disabled={loading}
+          className="text-sm font-medium text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+        >
+          {loading ? "Loading..." : sensitivity ? "Hide Sensitivity" : "Show Sensitivity"}
+        </button>
+        {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+        {sensitivity && <SensitivityTable data={sensitivity} />}
+      </div>
     </div>
   );
 }
 
 export default function ValuationResults({
   report,
+  request,
 }: {
   report: ValuationReport;
+  request: ValuationRequest;
 }) {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportPdf(report.id);
+    } catch {
+      // silently fail — the browser will show a download error
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Summary */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-5">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
-          Valuation Summary — {report.company_name}
-        </h2>
+        <div className="flex items-start justify-between mb-1">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Valuation Summary — {report.company_name}
+          </h2>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-blue-400"
+          >
+            {exporting ? "Exporting..." : "Export PDF"}
+          </button>
+        </div>
         <p className="text-sm text-gray-500 mb-4">
           Sector: {report.sector.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} |
           Generated: {new Date(report.created_at).toLocaleString()} |
@@ -115,27 +189,13 @@ export default function ValuationResults({
         </p>
 
         {report.results.length > 1 && (
-          <div className="grid grid-cols-3 gap-4">
-            {report.results.map((r) => (
-              <div key={r.methodology} className="text-center">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  {methodNames[r.methodology]}
-                </p>
-                <p className="text-xl font-bold text-blue-600 mt-1">
-                  {formatCurrency(r.estimated_value)}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {formatCurrency(r.value_range[0])} – {formatCurrency(r.value_range[1])}
-                </p>
-              </div>
-            ))}
-          </div>
+          <TriangulationView results={report.results} />
         )}
       </div>
 
       {/* Per-method details */}
       {report.results.map((result) => (
-        <ResultCard key={result.methodology} result={result} />
+        <ResultCard key={result.methodology} result={result} request={request} />
       ))}
     </div>
   );

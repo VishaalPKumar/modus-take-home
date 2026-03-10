@@ -1,4 +1,7 @@
 from datetime import date
+
+import pytest
+
 from app.engines.last_round import LastRoundEngine
 from app.data.provider import MockDataProvider
 from app.models import LastRoundInput, Methodology
@@ -40,3 +43,14 @@ def test_last_round_range():
         ),
     )
     assert result.value_range[0] < result.estimated_value < result.value_range[1]
+
+
+def test_last_round_ancient_date_raises():
+    engine = LastRoundEngine(MockDataProvider())
+    with pytest.raises(ValueError, match="Unable to retrieve Nasdaq index data"):
+        engine.value(
+            last_round_input=LastRoundInput(
+                post_money_valuation=50_000_000,
+                round_date=date(2015, 1, 1),
+            ),
+        )

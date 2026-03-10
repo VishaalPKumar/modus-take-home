@@ -1,4 +1,4 @@
-from statistics import median
+from statistics import median, quantiles
 
 from app.data.provider import DataProvider
 from app.engines.base import ValuationEngine
@@ -14,8 +14,10 @@ class CompsEngine(ValuationEngine):
 
         # Step 1: Fetch comparable companies
         comps = self.data_provider.get_comparable_companies(sector)
-        if not comps:
-            raise ValueError(f"No comparable companies found for sector '{sector}'")
+        if len(comps) < 2:
+            raise ValueError(
+                f"Need at least 2 comparable companies for sector '{sector}', found {len(comps)}"
+            )
 
         steps.append(ValuationStep(
             description="Identified comparable public companies",
@@ -46,11 +48,9 @@ class CompsEngine(ValuationEngine):
         estimated_value = comps_input.revenue * median_multiple
 
         # Range: use 25th/75th percentile multiples
-        sorted_multiples = sorted(multiple_values)
-        q1_idx = len(sorted_multiples) // 4
-        q3_idx = (3 * len(sorted_multiples)) // 4
-        low = comps_input.revenue * sorted_multiples[q1_idx]
-        high = comps_input.revenue * sorted_multiples[q3_idx]
+        q1, _q2, q3 = quantiles(multiple_values, n=4)
+        low = comps_input.revenue * q1
+        high = comps_input.revenue * q3
 
         steps.append(ValuationStep(
             description="Applied median multiple to target company revenue",

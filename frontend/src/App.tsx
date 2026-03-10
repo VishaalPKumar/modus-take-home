@@ -7,11 +7,16 @@ import type { ValuationRequest, ValuationReport } from "./types";
 export default function App() {
   const [sectors, setSectors] = useState<string[]>([]);
   const [report, setReport] = useState<ValuationReport | null>(null);
+  const [lastRequest, setLastRequest] = useState<ValuationRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [sectorError, setSectorError] = useState<string | null>(null);
+
   useEffect(() => {
-    getSectors().then(setSectors).catch(console.error);
+    getSectors()
+      .then(setSectors)
+      .catch(() => setSectorError("Failed to load sectors. Is the backend running?"));
   }, []);
 
   const handleSubmit = async (request: ValuationRequest) => {
@@ -19,6 +24,7 @@ export default function App() {
     setError(null);
     try {
       const result = await runValuation(request);
+      setLastRequest(request);
       setReport(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "An error occurred");
@@ -56,13 +62,25 @@ export default function App() {
 
           {/* Results Panel */}
           <div className="lg:col-span-8">
+            {sectorError && (
+              <div className="rounded-md bg-yellow-50 border border-yellow-200 p-4 mb-6">
+                <p className="text-sm text-yellow-700">{sectorError}</p>
+              </div>
+            )}
             {error && (
               <div className="rounded-md bg-red-50 border border-red-200 p-4 mb-6">
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
-            {report ? (
-              <ValuationResults report={report} />
+            {loading ? (
+              <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
+                <div className="h-6 w-48 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                <div className="h-32 w-full bg-gray-100 rounded animate-pulse mt-4" />
+              </div>
+            ) : report && lastRequest ? (
+              <ValuationResults report={report} request={lastRequest} />
             ) : (
               <div className="rounded-lg border-2 border-dashed border-gray-200 p-12 text-center">
                 <p className="text-gray-400 text-sm">

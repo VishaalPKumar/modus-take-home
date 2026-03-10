@@ -10,6 +10,12 @@ class DCFEngine(ValuationEngine):
         growth_rate = dcf_input.growth_rate
         discount_rate = dcf_input.discount_rate
         terminal_growth_rate = dcf_input.terminal_growth_rate
+
+        if discount_rate <= terminal_growth_rate:
+            raise ValueError(
+                f"Discount rate ({discount_rate}) must exceed terminal growth rate ({terminal_growth_rate}) "
+                "for the Gordon Growth Model to produce a valid terminal value"
+            )
         margin = dcf_input.profit_margin
         years = dcf_input.projection_years
 

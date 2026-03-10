@@ -40,6 +40,12 @@ def test_get_index_value_unknown_index():
     assert value is None
 
 
+def test_get_index_value_far_outside_range_returns_none():
+    provider = MockDataProvider()
+    value = provider.get_index_value("nasdaq", date(2015, 1, 1))
+    assert value is None
+
+
 def test_get_sectors():
     provider = MockDataProvider()
     sectors = provider.get_sectors()

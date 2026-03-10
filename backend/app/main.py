@@ -1,9 +1,19 @@
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 
 from app.data.provider import MockDataProvider
-from app.models import ValuationReport, ValuationRequest
+from app.models import SensitivityRequest, SensitivityResponse, ValuationReport, ValuationRequest
+from app.pdf import generate_report_pdf
 from app.service import ValuationService
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="VC Audit Tool", version="0.1.0")
 
@@ -60,9 +70,19 @@ def create_valuation(request: ValuationRequest):
     try:
         report = valuation_service.run(request)
     except ValueError as e:
+        logger.warning("Valuation rejected: %s", e)
         raise HTTPException(status_code=400, detail=str(e))
     _reports[report.id] = report
     return report
+
+
+@app.post("/api/sensitivity", response_model=SensitivityResponse)
+def run_sensitivity(request: SensitivityRequest):
+    try:
+        return valuation_service.sensitivity(request)
+    except ValueError as e:
+        logger.warning("Sensitivity rejected: %s", e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/api/valuations/{report_id}", response_model=ValuationReport)
@@ -71,3 +91,17 @@ def get_valuation(report_id: str):
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return report
+
+
+@app.get("/api/valuations/{report_id}/export")
+def export_valuation(report_id: str):
+    report = _reports.get(report_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    pdf_bytes = generate_report_pdf(report)
+    filename = f"{report.company_name.replace(' ', '_')}_{report_id[:8]}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

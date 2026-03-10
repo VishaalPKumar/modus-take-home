@@ -59,7 +59,20 @@ def test_post_valuation_missing_input(client):
         "sector": "technology",
         "methodologies": ["comps"],
     })
-    assert resp.status_code == 400
+    assert resp.status_code == 422  # Pydantic model validation
+
+
+def test_post_sensitivity_dcf(client):
+    resp = client.post("/api/sensitivity", json={
+        "methodology": "dcf",
+        "dcf_input": {"revenue": 10000000},
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["methodology"] == "dcf"
+    assert data["base_estimated_value"] > 0
+    assert len(data["data_points"]) > 0
+    assert "discount_rate" in data["varied_parameters"]
 
 
 def test_get_sectors(client):
@@ -67,3 +80,25 @@ def test_get_sectors(client):
     assert resp.status_code == 200
     data = resp.json()
     assert "technology" in data
+
+
+def test_export_pdf_returns_pdf(client):
+    # Create a valuation first
+    create_resp = client.post("/api/valuations", json={
+        "company_name": "PdfTestCo",
+        "sector": "technology",
+        "methodologies": ["comps"],
+        "comps_input": {"revenue": 10000000},
+    })
+    assert create_resp.status_code == 200
+    report_id = create_resp.json()["id"]
+
+    resp = client.get(f"/api/valuations/{report_id}/export")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "application/pdf"
+    assert resp.content[:5] == b"%PDF-"
+
+
+def test_export_pdf_not_found(client):
+    resp = client.get("/api/valuations/nonexistent-id/export")
+    assert resp.status_code == 404

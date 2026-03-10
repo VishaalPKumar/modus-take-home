@@ -48,11 +48,13 @@ def test_all_methods(service):
 
 
 def test_missing_input_raises(service):
-    request = ValuationRequest(
-        company_name="BadCo",
-        sector="technology",
-        methodologies=[Methodology.COMPS],
-        # Missing comps_input
-    )
-    with pytest.raises(ValueError, match="comps_input"):
-        service.run(request)
+    """Model-level validation now catches missing inputs at construction time."""
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError, match="comps_input"):
+        ValuationRequest(
+            company_name="BadCo",
+            sector="technology",
+            methodologies=[Methodology.COMPS],
+            # Missing comps_input
+        )

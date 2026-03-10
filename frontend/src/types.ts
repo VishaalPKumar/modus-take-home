@@ -50,6 +50,26 @@ export interface ValuationReport {
   created_at: string;
 }
 
+export interface SensitivityRequest {
+  methodology: Methodology;
+  sector?: string;
+  comps_input?: CompsInput;
+  dcf_input?: DCFInput;
+  last_round_input?: LastRoundInput;
+}
+
+export interface SensitivityPoint {
+  parameters: Record<string, number>;
+  estimated_value: number;
+}
+
+export interface SensitivityResponse {
+  methodology: Methodology;
+  base_estimated_value: number;
+  varied_parameters: string[];
+  data_points: SensitivityPoint[];
+}
+
 export interface MethodologyInfo {
   id: Methodology;
   name: string;

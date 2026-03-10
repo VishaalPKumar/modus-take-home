@@ -26,8 +26,10 @@ class MockDataProvider(DataProvider):
         data_points = NASDAQ_INDEX.get(index_name.lower())
         if not data_points:
             return None
-        # Find closest date
+        # Find closest date, but reject if gap exceeds 180 days
         closest = min(data_points, key=lambda dp: abs((dp[0] - as_of_date).days))
+        if abs((closest[0] - as_of_date).days) > 180:
+            return None
         return closest[1]
 
     def get_sectors(self) -> list[str]:
