@@ -118,14 +118,14 @@
                 <ul>
                   <li><span class="mono">statistics.median()</span> for central estimate</li>
                   <li><span class="mono">quantiles()</span> for Q1/Q3 range</li>
-                  <li>Minimum 2 comparables required (raises <span class="mono">ValueError</span>)</li>
+                  <li>Minimum 3 comparables required (raises <span class="mono">ValueError</span>)</li>
                 </ul>
               </div>
               <div>
                 <div class="info-card">
                   <h3><i class="fa-solid fa-database" style="color: var(--primary-color);"></i> &nbsp;Mock Data</h3>
-                  <p>15 real public companies across 4 sectors</p>
-                  <p class="text-muted" style="font-size: 13pt;">Datadog, Snowflake, CrowdStrike, Palantir, UiPath&hellip;</p>
+                  <p>17 real public companies across 4 sectors</p>
+                  <p class="text-muted" style="font-size: 13pt;">Datadog, Snowflake, CrowdStrike, Palantir, MongoDB&hellip;</p>
                 </div>
                 <div class="info-card" style="margin-top: 14px;">
                   <h3><i class="fa-solid fa-chart-bar" style="color: var(--primary-color);"></i> &nbsp;Output</h3>
@@ -230,7 +230,7 @@
                 <h3><i class="fa-solid fa-file-pdf" style="color: var(--primary-color);"></i> &nbsp;PDF Export</h3>
                 <p>Summary table + per-method breakdowns</p>
                 <p>Full audit narrative with all assumptions</p>
-                <p>Generated via <span class="mono">ReportLab</span></p>
+                <p>Generated via <span class="mono">fpdf2</span></p>
               </div>
               <div class="info-card" style="margin-top: 14px;">
                 <h3><i class="fa-solid fa-eye" style="color: var(--primary-color);"></i> &nbsp;Design Principle</h3>
@@ -275,13 +275,14 @@
       </section>
 
       <section id="divider-3" class="section-divider" data-state="is-section-divider">
-        <h1>Quality &amp; UX</h1>
+        <h1>Live Demo</h1>
+        <p style="font-size: 16pt; color: var(--muted-color); margin-top: 20px;">Walkthrough of the running application</p>
       </section>
 
       <section id="slide-10">
         <h2>Testing Strategy</h2>
         <div class="content">
-          <p class="text-muted" style="font-size: 14pt; margin-bottom: 8px;"><strong style="color: var(--text-color);">~50+ tests</strong> across all layers</p>
+          <p class="text-muted" style="font-size: 14pt; margin-bottom: 8px;"><strong style="color: var(--text-color);">52 tests</strong> across all layers</p>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
             <div class="info-card">
               <h3><i class="fa-solid fa-cube" style="color: var(--primary-color);"></i> &nbsp;Models</h3>
@@ -295,7 +296,7 @@
               <h3><i class="fa-solid fa-gears" style="color: var(--primary-color);"></i> &nbsp;Engines</h3>
               <ul>
                 <li>Correct calculations</li>
-                <li>Edge cases (&lt; 2 comps)</li>
+                <li>Edge cases (&lt; 3 comps)</li>
                 <li>Monotonicity properties</li>
               </ul>
             </div>
@@ -399,11 +400,52 @@
         </div>
       </section>
 
-      <section id="slide-13" class="section-divider" data-state="is-section-divider">
-        <h1 style="font-size: 48pt;">Thank You</h1>
-        <p style="font-size: 18pt; color: var(--text-color); margin-top: 20px;">Questions about design, implementation, or methodology?</p>
-        <p style="font-size: 14pt; color: var(--muted-color); margin-top: 30px;">Vishaal Kumar &nbsp;&middot;&nbsp; vishaal@hey.com</p>
+      <section id="slide-tradeoffs">
+        <h2>Tradeoffs</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="info-card">
+              <h3><i class="fa-solid fa-database" style="color: var(--primary-color);"></i> &nbsp;Mock Data Only</h3>
+              <p>No live market feeds &mdash; <span class="mono">DataProvider</span> ABC is the seam for swapping in Bloomberg, PitchBook, or Capital IQ</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-code" style="color: var(--primary-color);"></i> &nbsp;<span class="mono">**kwargs</span> Dispatch</h3>
+              <p>Flexible engine interface at the cost of runtime (not compile-time) argument checking</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-memory" style="color: var(--primary-color);"></i> &nbsp;In-Memory Storage</h3>
+              <p><span class="mono">OrderedDict</span> with bounded eviction &mdash; no persistence across restarts, but zero infrastructure overhead</p>
+            </div>
+            <div class="info-card">
+              <h3><i class="fa-solid fa-bolt" style="color: var(--primary-color);"></i> &nbsp;Sync Computation</h3>
+              <p>Valuation math runs synchronously behind async handlers &mdash; fast enough that a threadpool adds complexity without benefit</p>
+            </div>
+          </div>
+        </div>
       </section>
+
+      <section id="slide-future">
+        <h2>Future Improvements</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <ul>
+                <li>Live market data providers (Bloomberg, PitchBook, Capital IQ)</li>
+                <li>Database persistence with user authentication</li>
+                <li>EV/EBITDA multiples as second axis for Comps</li>
+              </ul>
+            </div>
+            <div>
+              <ul>
+                <li>Custom comparable sets (user-uploaded peer lists)</li>
+                <li>Monte Carlo simulation for probabilistic ranges</li>
+                <li>Portfolio-level batch reporting</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
     </div>
   </div>
