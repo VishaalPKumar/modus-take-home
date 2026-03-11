@@ -1,5 +1,5 @@
 import type { SensitivityResponse } from "../types";
-import { formatCurrency } from "../utils";
+import { formatCurrency, formatLabel } from "../utils";
 
 function formatPercent(value: number): string {
   return `${(value * 100).toFixed(0)}%`;
@@ -54,7 +54,7 @@ function TwoDTable({ data }: { data: SensitivityResponse }) {
               {growthRates.map((gr) => {
                 const val = lookup.get(`${dr}-${gr}`);
                 const isBase =
-                  Math.abs(dr - 0.1) < 0.001 && Math.abs(gr - 0.15) < 0.001;
+                  val != null && Math.abs(val - data.base_estimated_value) / (data.base_estimated_value || 1) < 0.001;
                 return (
                   <td
                     key={gr}
@@ -84,7 +84,7 @@ function OneDTable({ data }: { data: SensitivityResponse }) {
   const allValues = data.data_points.map((p) => p.estimated_value);
   const min = Math.min(...allValues);
   const max = Math.max(...allValues);
-  const isBase = (val: number) => Math.abs(val - data.base_estimated_value) < 1;
+  const isBase = (val: number) => Math.abs(val - data.base_estimated_value) / (data.base_estimated_value || 1) < 0.001;
 
   return (
     <div className="overflow-x-auto">
@@ -92,7 +92,7 @@ function OneDTable({ data }: { data: SensitivityResponse }) {
         <thead>
           <tr>
             <th className="px-3 py-2 bg-gray-100 border border-gray-200 text-left text-gray-600 font-medium">
-              {paramName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              {formatLabel(paramName)}
             </th>
             <th className="px-3 py-2 bg-gray-100 border border-gray-200 text-right text-gray-600 font-medium">
               Estimated Value

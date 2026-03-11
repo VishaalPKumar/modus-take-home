@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Methodology, ValuationRequest } from "../types";
-import { methodEntries } from "../utils";
+import { formatLabel, methodNames } from "../utils";
 
 interface Props {
   sectors: string[];
@@ -40,22 +40,29 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
     e.preventDefault();
     setValidationError(null);
 
-    if (methods.has("comps") && (isNaN(parseFloat(revenue)) || parseFloat(revenue) <= 0)) {
+    const parsedRevenue = parseFloat(revenue);
+    const parsedDcfRevenue = parseFloat(dcfRevenue || revenue);
+    const parsedDiscountRate = parseFloat(discountRate);
+    const parsedTerminalGrowthRate = parseFloat(terminalGrowthRate);
+    const parsedGrowthRate = parseFloat(growthRate);
+    const parsedProfitMargin = parseFloat(profitMargin);
+    const parsedPostMoney = parseFloat(postMoneyValuation);
+
+    if (methods.has("comps") && (isNaN(parsedRevenue) || parsedRevenue <= 0)) {
       setValidationError("Comps: Revenue must be a positive number.");
       return;
     }
     if (methods.has("dcf")) {
-      const dcfRev = parseFloat(dcfRevenue || revenue);
-      if (isNaN(dcfRev) || dcfRev <= 0) {
+      if (isNaN(parsedDcfRevenue) || parsedDcfRevenue <= 0) {
         setValidationError("DCF: Revenue must be a positive number.");
         return;
       }
-      if (parseFloat(discountRate) <= parseFloat(terminalGrowthRate)) {
+      if (parsedDiscountRate <= parsedTerminalGrowthRate) {
         setValidationError("DCF: Discount rate must exceed terminal growth rate.");
         return;
       }
     }
-    if (methods.has("last_round") && (isNaN(parseFloat(postMoneyValuation)) || parseFloat(postMoneyValuation) <= 0)) {
+    if (methods.has("last_round") && (isNaN(parsedPostMoney) || parsedPostMoney <= 0)) {
       setValidationError("Last Round: Post-money valuation must be a positive number.");
       return;
     }
@@ -67,20 +74,20 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
     };
 
     if (methods.has("comps")) {
-      request.comps_input = { revenue: parseFloat(revenue) };
+      request.comps_input = { revenue: parsedRevenue };
     }
     if (methods.has("dcf")) {
       request.dcf_input = {
-        revenue: parseFloat(dcfRevenue || revenue),
-        growth_rate: parseFloat(growthRate) / 100,
-        discount_rate: parseFloat(discountRate) / 100,
-        terminal_growth_rate: parseFloat(terminalGrowthRate) / 100,
-        profit_margin: parseFloat(profitMargin) / 100,
+        revenue: parsedDcfRevenue,
+        growth_rate: parsedGrowthRate / 100,
+        discount_rate: parsedDiscountRate / 100,
+        terminal_growth_rate: parsedTerminalGrowthRate / 100,
+        profit_margin: parsedProfitMargin / 100,
       };
     }
     if (methods.has("last_round")) {
       request.last_round_input = {
-        post_money_valuation: parseFloat(postMoneyValuation),
+        post_money_valuation: parsedPostMoney,
         round_date: roundDate,
       };
     }
@@ -116,7 +123,7 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
           <option value="">Select a sector</option>
           {sectors.map((s) => (
             <option key={s} value={s}>
-              {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              {formatLabel(s)}
             </option>
           ))}
         </select>
@@ -125,12 +132,12 @@ export default function ValuationForm({ sectors, onSubmit, loading }: Props) {
       <div>
         <label className={labelClass}>Valuation Methodologies</label>
         <div className="space-y-2">
-          {methodEntries.map(([id, name]) => (
+          {(Object.entries(methodNames) as [Methodology, string][]).map(([id, name]) => (
             <label key={id} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={methods.has(id as Methodology)}
-                onChange={() => toggleMethod(id as Methodology)}
+                checked={methods.has(id)}
+                onChange={() => toggleMethod(id)}
                 className="rounded border-gray-300"
               />
               {name}

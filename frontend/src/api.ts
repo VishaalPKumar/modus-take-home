@@ -50,14 +50,8 @@ export async function getSectors(): Promise<string[]> {
   return resp.json();
 }
 
-export async function exportPdf(reportId: string): Promise<void> {
+export async function fetchPdfBlob(reportId: string): Promise<Blob> {
   const resp = await fetch(`${BASE_URL}/valuations/${reportId}/export`);
   if (!resp.ok) throw new Error("Export failed");
-  const blob = await resp.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `valuation_${reportId.slice(0, 8)}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
+  return resp.blob();
 }

@@ -26,15 +26,31 @@ def _pretty_key(key: str) -> str:
     return key.replace("_", " ").title()
 
 
-def _pretty_value(value: object) -> str:
-    if isinstance(value, float):
-        if 0 < abs(value) < 1:
-            return fmt_percent(value)
-        if abs(value) > 1000:
-            return fmt_currency(value)
-        if value == int(value):
+# Explicit formatting hints for assumption keys to avoid magnitude-guessing.
+_PERCENT_KEYS = frozenset({
+    "growth_rate", "discount_rate", "terminal_growth_rate",
+    "profit_margin", "index_return",
+})
+_CURRENCY_KEYS = frozenset({
+    "revenue", "target_revenue", "post_money_valuation",
+    "index_at_round", "index_current",
+})
+_COUNT_KEYS = frozenset({
+    "peer_count", "projection_years",
+})
+
+
+def _pretty_value(key: str, value: object) -> str:
+    if isinstance(value, (int, float)):
+        if key in _PERCENT_KEYS:
+            return fmt_percent(float(value))
+        if key in _CURRENCY_KEYS:
+            return fmt_currency(float(value))
+        if key in _COUNT_KEYS:
             return str(int(value))
-        return f"{value:.2f}"
+        if isinstance(value, float) and value != int(value):
+            return f"{value:.2f}"
+        return str(int(value)) if isinstance(value, float) else str(value)
     return str(value)
 
 
@@ -73,7 +89,7 @@ def _add_method_section(pdf: _ReportPDF, result: ValuationResult) -> None:
     for key, value in result.assumptions.items():
         pdf.set_fill_color(245, 245, 245)
         pdf.cell(col_w, 6, f"  {_pretty_key(key)}", border=0, fill=True)
-        pdf.cell(col_w, 6, _pretty_value(value), border=0, fill=True, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(col_w, 6, _pretty_value(key, value), border=0, fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
 
     # Audit Trail

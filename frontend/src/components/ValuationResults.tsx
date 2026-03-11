@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ValuationReport, ValuationRequest, ValuationResult, SensitivityResponse } from "../types";
-import { runSensitivity, exportPdf } from "../api";
-import { formatCurrency, methodNames } from "../utils";
+import { runSensitivity, fetchPdfBlob } from "../api";
+import { formatCurrency, formatLabel, methodNames } from "../utils";
 import TriangulationView from "./TriangulationView";
 import SensitivityTable from "./SensitivityTable";
 
@@ -65,7 +65,7 @@ function ResultCard({
             {Object.entries(result.assumptions).map(([key, value]) => (
               <div key={key} className="contents">
                 <dt className="text-gray-500">
-                  {key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                  {formatLabel(key)}
                 </dt>
                 <dd className="text-gray-900 font-medium">
                   {typeof value === "number"
@@ -142,13 +142,21 @@ export default function ValuationResults({
   request: ValuationRequest;
 }) {
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const handleExport = async () => {
     setExporting(true);
+    setExportError(null);
     try {
-      await exportPdf(report.id);
-    } catch {
-      // silently fail — the browser will show a download error
+      const blob = await fetchPdfBlob(report.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `valuation_${report.id.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Export failed");
     } finally {
       setExporting(false);
     }
@@ -170,8 +178,11 @@ export default function ValuationResults({
             {exporting ? "Exporting..." : "Export PDF"}
           </button>
         </div>
+        {exportError && (
+          <p className="text-sm text-red-600 mb-2">{exportError}</p>
+        )}
         <p className="text-sm text-gray-500 mb-4">
-          Sector: {report.sector.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} |
+          Sector: {formatLabel(report.sector)} |
           Generated: {new Date(report.created_at).toLocaleString()} |
           Report ID: {report.id.slice(0, 8)}
         </p>

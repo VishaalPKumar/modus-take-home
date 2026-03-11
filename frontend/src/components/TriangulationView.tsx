@@ -112,8 +112,8 @@ export default function TriangulationView({
             );
           })}
           {/* Scale labels */}
-          <div className="flex justify-between text-xs text-gray-400 pl-23">
-            <span className="ml-23">{formatCurrency(globalMin)}</span>
+          <div className="flex justify-between text-xs text-gray-400 pl-[5.75rem]">
+            <span>{formatCurrency(globalMin)}</span>
             <span>{formatCurrency(globalMax)}</span>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import logging
 
+from app.constants import DCF_DISCOUNT_RATE_RANGE, DCF_GROWTH_RATE_RANGE, SENSITIVITY_STEPS
 from app.data.provider import DataProvider
 from app.engines.comps import CompsEngine
 from app.engines.dcf import DCFEngine
@@ -59,15 +60,15 @@ class ValuationService:
 
     def _sensitivity_dcf(self, dcf_input: DCFInput) -> SensitivityResponse:
         base_result = self._engines[Methodology.DCF].value(dcf_input=dcf_input)
-        discount_rates = [r / 100 for r in range(6, 17, 2)]  # 0.06 to 0.16
-        growth_rates = [r / 100 for r in range(5, 36, 5)]  # 0.05 to 0.35
+        discount_rates = DCF_DISCOUNT_RATE_RANGE
+        growth_rates = DCF_GROWTH_RATE_RANGE
         data_points: list[SensitivityPoint] = []
         for dr in discount_rates:
             for gr in growth_rates:
                 if dr <= dcf_input.terminal_growth_rate:
                     continue
                 try:
-                    modified = dcf_input.model_copy(update={"discount_rate": dr, "growth_rate": gr})
+                    modified = DCFInput.model_validate({**dcf_input.model_dump(), "discount_rate": dr, "growth_rate": gr})
                     result = self._engines[Methodology.DCF].value(dcf_input=modified)
                     data_points.append(SensitivityPoint(
                         parameters={"discount_rate": dr, "growth_rate": gr},
@@ -84,11 +85,11 @@ class ValuationService:
 
     def _sensitivity_comps(self, sector: str, comps_input: CompsInput) -> SensitivityResponse:
         base_result = self._engines[Methodology.COMPS].value(sector=sector, comps_input=comps_input)
-        steps = [i / 10 for i in range(-3, 4)]  # -0.3 to 0.3
+        steps = SENSITIVITY_STEPS
         data_points: list[SensitivityPoint] = []
         for step in steps:
             adjusted_revenue = comps_input.revenue * (1 + step)
-            modified = comps_input.model_copy(update={"revenue": adjusted_revenue})
+            modified = CompsInput.model_validate({**comps_input.model_dump(), "revenue": adjusted_revenue})
             result = self._engines[Methodology.COMPS].value(sector=sector, comps_input=modified)
             data_points.append(SensitivityPoint(
                 parameters={"revenue": adjusted_revenue},
@@ -103,11 +104,11 @@ class ValuationService:
 
     def _sensitivity_last_round(self, last_round_input: LastRoundInput) -> SensitivityResponse:
         base_result = self._engines[Methodology.LAST_ROUND].value(last_round_input=last_round_input)
-        steps = [i / 10 for i in range(-3, 4)]  # -0.3 to 0.3
+        steps = SENSITIVITY_STEPS
         data_points: list[SensitivityPoint] = []
         for step in steps:
             adjusted_val = last_round_input.post_money_valuation * (1 + step)
-            modified = last_round_input.model_copy(update={"post_money_valuation": adjusted_val})
+            modified = LastRoundInput.model_validate({**last_round_input.model_dump(), "post_money_valuation": adjusted_val})
             result = self._engines[Methodology.LAST_ROUND].value(last_round_input=modified)
             data_points.append(SensitivityPoint(
                 parameters={"post_money_valuation": adjusted_val},

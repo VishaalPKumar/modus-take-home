@@ -381,7 +381,7 @@
             </div>
             <div class="info-card">
               <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary-color);"></i> &nbsp;Pydantic as Source of Truth</h3>
-              <p>One model definition drives validation, serialization, and OpenAPI documentation</p>
+              <p>One model definition drives validation, serialization, and OpenAPI docs. Sensitivity uses <span class="mono">model_validate()</span> to ensure validators run on modified inputs.</p>
             </div>
             <div class="info-card">
               <h3><i class="fa-solid fa-plug-circle-check" style="color: var(--primary-color);"></i> &nbsp;DataProvider ABC</h3>
@@ -413,11 +413,11 @@
             </div>
             <div class="info-card">
               <h3><i class="fa-solid fa-memory" style="color: var(--primary-color);"></i> &nbsp;In-Memory Storage</h3>
-              <p><span class="mono">OrderedDict</span> with bounded eviction &mdash; no persistence across restarts, but zero infrastructure overhead</p>
+              <p><span class="mono">OrderedDict</span> with bounded eviction &mdash; process-local, no persistence across restarts, but zero infrastructure overhead</p>
             </div>
             <div class="info-card">
-              <h3><i class="fa-solid fa-bolt" style="color: var(--primary-color);"></i> &nbsp;Sync Computation</h3>
-              <p>Valuation math runs synchronously behind async handlers &mdash; fast enough that a threadpool adds complexity without benefit</p>
+              <h3><i class="fa-solid fa-bolt" style="color: var(--primary-color);"></i> &nbsp;Sync Endpoints</h3>
+              <p>Valuation math runs synchronously &mdash; sync <span class="mono">def</span> lets FastAPI auto-thread; fast enough (&lt;50ms) that async adds complexity without benefit</p>
             </div>
           </div>
         </div>

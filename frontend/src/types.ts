@@ -2,7 +2,6 @@ export type Methodology = "comps" | "dcf" | "last_round";
 
 export interface CompsInput {
   revenue: number;
-  ebitda?: number;
 }
 
 export interface DCFInput {
@@ -37,7 +36,7 @@ export interface ValuationResult {
   methodology: Methodology;
   estimated_value: number;
   value_range: [number, number];
-  assumptions: Record<string, unknown>;
+  assumptions: Record<string, string | number | boolean>;
   steps: ValuationStep[];
   citations: string[];
 }

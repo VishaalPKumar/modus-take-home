@@ -15,11 +15,12 @@ Each methodology produces a structured audit trail: step-by-step derivation, ass
 ## Design Decisions
 
 - **Mock data with abstraction layer** — `DataProvider` ABC makes it trivial to swap in live APIs (Bloomberg, PitchBook) without changing engine or service code
-- **Pydantic models** — single source of truth for validation, serialization, and API docs
+- **Pydantic models** — single source of truth for validation, serialization, and API docs. Sensitivity analysis uses `model_validate()` to ensure all cross-field validators run on modified inputs
 - **Strategy pattern (`**kwargs`)** — each engine declares only its own parameters; callers dispatch uniformly without a union input type. Tradeoff: runtime argument checking, mitigated by small engine count and high test coverage
-- **Sensitivity analysis** — each method varies its most impactful inputs over a grid (e.g. discount rate + growth rate for DCF)
+- **Sensitivity analysis** — each method varies its most impactful inputs over named constant grids (e.g. discount rate + growth rate for DCF)
 - **Triangulation** — multiple methods produce convergence/divergence visualization with range bars and overlap zone
-- **PDF export** — `fpdf2` generates a self-contained report with audit trail, assumptions, and citations
+- **PDF export** — `fpdf2` generates a self-contained report with explicit per-key formatting for assumptions (currency, percent, count)
+- **Security hardening** — restricted CORS methods/headers, global exception handler to suppress stack traces, input length bounds on string fields
 
 ## Tradeoffs
 
@@ -27,8 +28,8 @@ Each methodology produces a structured audit trail: step-by-step derivation, ass
 |----------|-----|------------|
 | Mock data only | `DataProvider` ABC is the seam for live APIs | No real market data |
 | `**kwargs` dispatch | Simpler strategy pattern | Runtime, not compile-time, arg checking |
-| In-memory storage | `OrderedDict` with bounded eviction | Needs Redis/Postgres for production |
-| Sync math, async handlers | Valuations are fast (<50ms) | No background task support |
+| In-memory storage | `OrderedDict` with bounded eviction | Needs Redis/Postgres for production; process-local (not safe for multi-worker) |
+| Sync endpoints | Valuations are fast (<50ms); sync `def` lets FastAPI auto-thread | No background task support |
 
 ## Future Improvements
 

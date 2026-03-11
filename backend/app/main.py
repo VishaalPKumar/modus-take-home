@@ -3,9 +3,9 @@ import os
 import re
 from collections import OrderedDict
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
 from app.data.provider import MockDataProvider
 from app.models import SensitivityRequest, SensitivityResponse, ValuationReport, ValuationRequest
@@ -24,9 +24,15 @@ cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(","
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
+
+@app.exception_handler(Exception)
+def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
 
 data_provider = MockDataProvider()
 valuation_service = ValuationService(data_provider)
@@ -38,12 +44,12 @@ _reports: OrderedDict[str, ValuationReport] = OrderedDict()
 
 
 @app.get("/api/health")
-def health():
+def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.get("/api/methodologies")
-def get_methodologies():
+def get_methodologies() -> list[dict]:
     return [
         {
             "id": "comps",
@@ -67,12 +73,12 @@ def get_methodologies():
 
 
 @app.get("/api/sectors")
-def get_sectors():
+def get_sectors() -> list[str]:
     return data_provider.get_sectors()
 
 
 @app.post("/api/valuations", response_model=ValuationReport)
-async def create_valuation(request: ValuationRequest):
+def create_valuation(request: ValuationRequest):
     try:
         report = valuation_service.run(request)
     except ValueError as e:
@@ -94,7 +100,7 @@ def run_sensitivity(request: SensitivityRequest):
 
 
 @app.get("/api/valuations/{report_id}", response_model=ValuationReport)
-async def get_valuation(report_id: str):
+def get_valuation(report_id: str):
     report = _reports.get(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
@@ -102,7 +108,7 @@ async def get_valuation(report_id: str):
 
 
 @app.get("/api/valuations/{report_id}/export")
-async def export_valuation(report_id: str):
+def export_valuation(report_id: str):
     report = _reports.get(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")

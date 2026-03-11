@@ -1,5 +1,5 @@
 from datetime import date, datetime, timezone
-from enum import Enum
+from enum import StrEnum
 from typing import Any, TypedDict
 from uuid import uuid4
 
@@ -14,7 +14,7 @@ class ComparableCompany(TypedDict):
     enterprise_value: float
 
 
-class Methodology(str, Enum):
+class Methodology(StrEnum):
     COMPS = "comps"
     DCF = "dcf"
     LAST_ROUND = "last_round"
@@ -22,8 +22,6 @@ class Methodology(str, Enum):
 
 class CompsInput(BaseModel):
     revenue: float = Field(gt=0, description="Annual revenue in USD")
-    # Reserved for future EV/EBITDA support
-    ebitda: float | None = Field(default=None, gt=0, description="Annual EBITDA in USD")
 
 
 class DCFInput(BaseModel):
@@ -50,8 +48,8 @@ class LastRoundInput(BaseModel):
 
 
 class ValuationRequest(BaseModel):
-    company_name: str = Field(min_length=1, description="Name of the portfolio company")
-    sector: str = Field(min_length=1, description="Industry sector")
+    company_name: str = Field(min_length=1, max_length=200, description="Name of the portfolio company")
+    sector: str = Field(min_length=1, max_length=100, description="Industry sector")
     methodologies: list[Methodology] = Field(min_length=1, description="Valuation methods to apply")
     comps_input: CompsInput | None = None
     dcf_input: DCFInput | None = None
